@@ -1,10 +1,10 @@
 import express from 'express';
 import {connect, publish} from './rmq';
 import logger from './logger';
+import {isAuthorized} from './auth';
 
 const app = express();
 const port = process.env.PORT ?? 4000;
-const apiKey = process.env.API_KEY ?? '';
 
 // Parse body as raw bytes so it is forwarded to RMQ without modification
 app.use(express.raw({type: '*/*', limit: '50mb'}));
@@ -14,7 +14,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/:routingKey', (req, res) => {
-  if (!apiKey || req.headers.authorization !== apiKey) {
+  if (!isAuthorized(req)) {
     logger.warn('Unauthorized request', {routingKey: req.params.routingKey, ip: req.ip});
     res.status(401).json({error: 'Unauthorized'});
     return;
