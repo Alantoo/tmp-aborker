@@ -22,7 +22,7 @@ jobs:
         run: |
           echo '${{ secrets.env_vars }}' > ~/hosting/atty-broker/.env
       # Add the rest of your deployment steps here
-      - name: Update docker-compose files
+      - name: Update docker compose files
         id: update_docker_files
         run: |
           cp -v ./deploy/docker/docker-compose.yml ~/hosting/atty-broker/docker-compose.yml
@@ -34,12 +34,12 @@ jobs:
           echo "{\"auths\":{\"ghcr.io\":{\"auth\":\"$AUTH\"}}}" > $DOCKER_CONFIG/config.json
       - name: Pull new image
         run: |
-          docker-compose -f ~/hosting/atty-broker/docker-compose.yml pull
+          docker compose -f ~/hosting/atty-broker/docker-compose.yml pull
       - name: Stop running application
         run: |
-          docker-compose -f ~/hosting/atty-broker/docker-compose.yml down
+          docker compose -f ~/hosting/atty-broker/docker-compose.yml down
       - name: Start updated application
         run: |
-          docker-compose -f ~/hosting/atty-broker/docker-compose.yml up -d
+          docker compose -f ~/hosting/atty-broker/docker-compose.yml up -d
       - name: Remove old images
         run: docker image prune --all --filter "until=$((24 * 30))h" # removing images older than 1 mo
