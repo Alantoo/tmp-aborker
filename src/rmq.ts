@@ -1,10 +1,12 @@
-import amqplib, {Channel, Connection} from 'amqplib';
+import amqplib, {Channel} from 'amqplib';
 import logger from './logger';
+
+type AmqpConnection = Awaited<ReturnType<typeof amqplib.connect>>;
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://localhost';
 const RABBITMQ_EXCHANGE = process.env.RABBITMQ_EXCHANGE ?? '';
 
-let connection: Connection | null = null;
+let connection: AmqpConnection | null = null;
 let channel: Channel | null = null;
 
 async function connect(): Promise<void> {
