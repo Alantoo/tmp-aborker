@@ -22,7 +22,8 @@ let channel: Channel | null = null;
 
 async function connect(): Promise<void> {
   logger.info('RMQ connecting', {url: rmqUrl, exchange: rmqExchange});
-  connection = await amqplib.connect(rmqUrl);
+  const useAmqps = rmqUrl.startsWith('amqps://');
+  connection = await amqplib.connect(rmqUrl, useAmqps ? {rejectUnauthorized: true} : undefined);
   channel = await connection.createChannel();
   await channel.assertExchange(rmqExchange, 'topic', {durable: true});
   logger.info('RMQ exchange asserted', {exchange: rmqExchange});
