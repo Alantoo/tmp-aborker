@@ -3,16 +3,29 @@ import logger from './logger';
 
 type AmqpConnection = Awaited<ReturnType<typeof amqplib.connect>>;
 
-const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://localhost';
-const RABBITMQ_EXCHANGE = process.env.RABBITMQ_EXCHANGE ?? '';
+const RABBITMQ_URL = process.env.RABBITMQ_URL;
+const RABBITMQ_EXCHANGE = process.env.RABBITMQ_EXCHANGE;
+
+if (!RABBITMQ_URL) {
+  throw new Error('Missing required env var: RABBITMQ_URL');
+}
+
+if (!RABBITMQ_EXCHANGE) {
+  throw new Error('Missing required env var: RABBITMQ_EXCHANGE');
+}
+
+const rmqUrl: string = RABBITMQ_URL;
+const rmqExchange: string = RABBITMQ_EXCHANGE;
 
 let connection: AmqpConnection | null = null;
 let channel: Channel | null = null;
 
 async function connect(): Promise<void> {
-  logger.info('RMQ connecting', {url: RABBITMQ_URL, exchange: RABBITMQ_EXCHANGE});
-  connection = await amqplib.connect(RABBITMQ_URL);
+  logger.info('RMQ connecting', {url: rmqUrl, exchange: rmqExchange});
+  connection = await amqplib.connect(rmqUrl);
   channel = await connection.createChannel();
+  await channel.assertExchange(rmqExchange, 'topic', {durable: true});
+  logger.info('RMQ exchange asserted', {exchange: rmqExchange});
 
   connection.on('close', () => {
     logger.warn('RMQ connection closed, reconnecting in 5s');
@@ -30,7 +43,7 @@ async function connect(): Promise<void> {
 
 function publish(routingKey: string, body: Buffer): boolean {
   if (!channel) throw new Error('RMQ channel not ready');
-  return channel.publish(RABBITMQ_EXCHANGE, routingKey, body, {persistent: true});
+  return channel.publish(rmqExchange, routingKey, body, {persistent: true});
 }
 
 export {connect, publish};

@@ -1,12 +1,13 @@
 services:
   atty-broker:
-    build: .
+    image: ghcr.io/alantoo/tmp-aborker:latest
     ports:
       - "${PORT:-4000}:4000"
-    environment:
-      PORT: 4000
-      API_KEY: ${API_KEY}
-      RABBITMQ_URL: ${RABBITMQ_URL}
-      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+    env_file:
+      - .env
+#      PORT: 4000
+#      API_KEY: ${API_KEY}
+#      RABBITMQ_URL: ${RABBITMQ_URL}
+#      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE}
+#      LOG_LEVEL: ${LOG_LEVEL:-info}
     restart: unless-stopped
